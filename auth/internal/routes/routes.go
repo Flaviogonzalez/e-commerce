@@ -24,7 +24,7 @@ func Routes(db *sql.DB) http.Handler {
 		MaxAge:           300,
 	}))
 
-	mux.Post("/register", handlers.Registerhandler)
+	mux.Post("/register", handlers.RegisterHandler)
 
 	return mux
 }

@@ -1,7 +1,11 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
 
-func Registerhandler(w http.ResponseWriter, r *http.Request) {
-	var req contracts.RegisterRequest
+	"github.com/flaviogonzalez/e-commerce/contracts"
+)
+
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	var req contracts.AuthRegisterRequest
 }
