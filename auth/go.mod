@@ -4,7 +4,11 @@ go 1.25.2
 
 require github.com/jackc/pgx/v5 v5.7.6
 
-require github.com/flaviogonzalez/e-commerce/contracts v0.0.0-20251202151852-813e2660c0eb // indirect
+require (
+	github.com/flaviogonzalez/e-commerce/contracts v0.0.0-20251202232259-3db3e3cb914a // indirect
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/sqlc-dev/pqtype v0.3.0 // indirect
+)
 
 require (
 	github.com/go-chi/chi/v5 v5.2.3

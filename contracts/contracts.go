@@ -6,11 +6,17 @@ type Payload struct {
 }
 
 type AuthRegisterRequest struct {
+	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Policy   int32  `json:"policy"`
 }
 
 type AuthRegisterResponse struct {
-	Error   bool   `json:"error"`
-	Message string `json:"message"`
+	Payload
+}
+
+type AuthLoginRequest struct { // credentials method
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
