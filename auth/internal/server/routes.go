@@ -23,8 +23,8 @@ func (s *Server) Routes() http.Handler {
 	}))
 
 	mux.Post("/register", s.RegisterHandler)
-	mux.Get("/user", s.GetUsersHandler)
-	mux.Get("/user/{id}", s.GetUserHandler)
+	mux.Get("/users", s.GetUsersHandler)
+	mux.Get("/users/{id}", s.GetUserHandler)
 
 	return mux
 }
