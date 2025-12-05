@@ -15,8 +15,11 @@ services:
       - PORT=8080
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - RABBITMQ_EXCHANGE=app_exchange
+      - KAFKA_BROKERS=kafka:9092
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
 
   listener:
@@ -31,11 +34,14 @@ services:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
       - RABBITMQ_EXCHANGE=app_exchange
       - AUTH_SERVICE_URL=http://auth:8080
+      - KAFKA_BROKERS=kafka:9092
     depends_on:
       rabbitmq:
         condition: service_healthy
       auth:
         condition: service_started
+      kafka:
+        condition: service_healthy
 
   auth:
     build:
@@ -47,9 +53,31 @@ services:
       replicas: 1
     environment:
       - DATABASE_URL=host=postgres port=5432 user=postgres password=root dbname=authentication sslmode=disable timezone=UTC
+      - KAFKA_BROKERS=kafka:9092
     depends_on:
       postgres:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  log:
+    build:
+      context: ./../log
+      dockerfile: ./../log/log.dockerfile
+    image: log:latest
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_TOPIC=logs
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_DB=logs
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mongo:
+        condition: service_started
 
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
@@ -64,6 +92,52 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongo:
+    image: mongo:7.0
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - "./db-data/mongo/:/data/db/"
+    environment:
+      - MONGO_INITDB_DATABASE=logs
 
   postgres:
     image: "postgres:17.5-alpine3.22"
