@@ -1,0 +1,11 @@
+{
+  "name": "@repo/config",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    "./eslint": "./eslint.config.ts",
+    "./prettier": "./prettier.config.json",
+    "./vitest": "./vitest.config.ts",
+    "./tsconfig": "./tsconfig.json"
+  }
+}

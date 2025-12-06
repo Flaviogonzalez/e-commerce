@@ -156,3 +156,73 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Frontend Services
+  # ─────────────────────────────────────────────────────────────────────
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./../ui/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - storefront
+      - dashboard
+      - broker
+    networks:
+      - frontend
+      - default
+
+  storefront:
+    build:
+      context: ./../ui
+      dockerfile: apps/storefront/Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - VITE_API_URL=http://broker:8080
+    expose:
+      - "3000"
+    networks:
+      - frontend
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  dashboard:
+    build:
+      context: ./../ui
+      dockerfile: apps/dashboard/Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - VITE_API_URL=http://broker:8080
+    expose:
+      - "3001"
+    networks:
+      - frontend
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  frontend:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
