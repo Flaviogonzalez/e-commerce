@@ -31,3 +31,20 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# UI package - Node.js
+ui/node_modules/
+ui/apps/storefront/node_modules/
+ui/apps/dashboard/node_modules/
+ui/packages/config/node_modules/
+ui/packages/ui/node_modules/
+ui/dist/
+ui/.output/
+ui/.vinxi/
+ui/.tanstack/
+ui/coverage/
+ui/playwright-report/
+ui/test-results/
+ui/*.tsbuildinfo
+ui/.cache/
+ui/.turbo/
